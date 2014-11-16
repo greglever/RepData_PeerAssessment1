@@ -1,25 +1,56 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: "Greg Lever"
+date: "12 November 2014"
 output: 
   html_document:
     keep_md: true
 ---
 
-
-## Loading and preprocessing the data
-
-
+```{r, echo=FALSE}
+### Loading and preprocessing the data
+### The following reads in the CSV data and converts the date column into a Date type:
+activityDF <- read.csv("./activity.csv")
+activityDF$date <- as.Date(activityDF$date, format="%Y-%m-%d")
+```
 
 ## What is mean total number of steps taken per day?
+The following is a histogram of the total number of steps taken over each day:
+```{r, echo=FALSE}
+TotSteps <- aggregate(steps ~ date, data=activityDF, sum, na.action = na.omit)
+hist(TotSteps$steps, xlab="Total Number of Steps", main="Total Steps Taken")
+```
 
-
+The mean and median total number of steps taken per day are as follows:
+```{r, echo=FALSE, results="asis"}
+library(knitr)
+MedianSteps <- aggregate(steps ~ date, data=activityDF, median, na.action = na.omit)
+MeanMedianSteps <- aggregate(steps ~ date, data=activityDF, mean, na.action = na.omit)
+MeanMedianSteps$Median_Steps <- MedianSteps$steps
+colnames(MeanMedianSteps) <- c("Date", "Mean_Steps", "Median_Steps")
+kable(MeanMedianSteps, digits=2)
+```
 
 ## What is the average daily activity pattern?
 
+```{r, echo=FALSE}
+IntervalStepsMean <- aggregate(steps ~ interval, data=activityDF, mean, na.action = na.omit)
+plot(IntervalStepsMean$interval, IntervalStepsMean$steps, type="l", xlab="5-minute Interval", ylab="Average number of steps taken")
+```
 
+```{r, echo=FALSE}
+maxSteps <- IntervalStepsMean[which.max(IntervalStepsMean$steps),]$steps
+maxInterval <- IntervalStepsMean[which.max(IntervalStepsMean$steps),]$interval
+```
+
+On average, across all the days in the dataset the maximum average number of steps taken was `r maxSteps` and this maximum occurred at interval `r maxInterval`
 
 ## Imputing missing values
 
+```{r, echo=FALSE}
+missingValues <- sum(is.na(activityDF$steps))
+```
 
+The total number of rows with `NA`s is `r missingValues`.       
 
 ## Are there differences in activity patterns between weekdays and weekends?
